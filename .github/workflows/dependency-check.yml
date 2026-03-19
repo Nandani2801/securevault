@@ -1,0 +1,43 @@
+name: OWASP Dependency Check Pipeline
+
+# This tells GitHub to run the scan every time code is pushed
+on:
+  push:
+    branches: [ "main", "devsecops-setup1", "test/dependency-check" ] 
+  pull_request:
+    branches: [ "main", "devsecops-setup1" ]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 1. The Magic Step: Grab the cached database so it runs in 1 minute instead of 20!
+      - name: Cache NVD Database
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/dependency-check
+          key: ${{ runner.os }}-odc-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-odc-
+
+      # 2. Run the actual OWASP scan
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'HPE-CPP3-TEAM-4-CTFd'
+          path: '.'
+          format: 'HTML'
+          args: >
+            --enableExperimental
+            --out report
+
+      # 3. Upload the HTML report as a downloadable artifact (so you don't commit it to Git!)
+      - name: Upload HTML Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: OWASP-Dependency-Check-Report
+          path: report/dependency-check-report.html
