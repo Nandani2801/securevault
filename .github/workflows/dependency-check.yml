@@ -30,8 +30,7 @@ jobs:
             --scan /src \
             --format HTML \
             --out /report \
-            --enableExperimental \
-            -n
+            --enableExperimental
         continue-on-error: true
 
       # 3. Upload the HTML report as a downloadable artifact
