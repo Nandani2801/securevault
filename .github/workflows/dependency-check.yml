@@ -3,7 +3,7 @@ name: OWASP Dependency Check Pipeline
 # This tells GitHub to run the scan every time code is pushed
 on:
   push:
-    branches: [ "main", "devsecops-setup1" , "test/dependency-check" ] 
+    branches: [ "main", "devsecops-setup1" , "test/dependency-check"] 
   pull_request:
     branches: [ "main", "devsecops-setup1" ]
 
@@ -29,9 +29,9 @@ jobs:
             --project "HPE-CPP3-TEAM-4-CTFd" \
             --scan /src \
             --format HTML \
-            --out /report/dependency-check-report.html \
+            --out /report \
             --enableExperimental \
-            --noDdUpdate
+            -n
         continue-on-error: true
 
       # 3. Upload the HTML report as a downloadable artifact
