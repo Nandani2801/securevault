@@ -1,0 +1,21 @@
+# Virtual environment
+venv/
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Logs & database
+*.log
+*.db
+
+# Node / frontend (CTFd may include)
+node_modules/
+CTFd/node_modules/
+
+# Mac system files (you are on Mac)
+.DS_Store
+
+# GitHub / build artifacts
+reports/
