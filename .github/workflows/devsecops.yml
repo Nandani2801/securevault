@@ -33,9 +33,7 @@ jobs:
         continue-on-error: true
 
       - name: Run Unit Tests
-        run: |
-          pip install -r CTFd/requirements.txt
-          pytest CTFd/tests/ -v --tb=short --ignore=CTFd/tests/cache
+        run: pytest CTFd/tests/ -v --tb=short --ignore=CTFd/tests/cache
         continue-on-error: true
 
       - name: SonarQube Scan
