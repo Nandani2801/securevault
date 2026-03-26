@@ -22,16 +22,16 @@ jobs:
           mkdir -p odc-reports
           chmod 777 odc-reports
 
-      # 2. Run OWASP Dependency-Check via Docker (Outputting HTML and JSON)
+      # 2. Run OWASP Dependency-Check via Docker as ROOT
       - name: Run OWASP Dependency-Check
         run: |
-          docker run --rm \
+          docker run --rm -u root \
             -v ${{ github.workspace }}:/src \
             -v ${{ github.workspace }}/odc-reports:/report \
             owasp/dependency-check:latest \
             --project "HPE-CPP3-TEAM-4-CTFd" \
             --scan /src \
-            --format HTML --format JSON \
+            --format ALL \
             --out /report \
             --enableExperimental
         continue-on-error: true
