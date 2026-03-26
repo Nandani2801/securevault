@@ -2,7 +2,7 @@ FROM python:3.11-slim-bookworm AS build
 
 WORKDIR /opt/CTFd
 
-# hadolint ignore=DL3008
+# Install build dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
@@ -15,20 +15,28 @@ RUN apt-get update \
 
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY CTFd/ /opt/CTFd
+# Copy entire repo (IMPORTANT)
+COPY . /opt/CTFd
 
+# Move into actual app directory
+WORKDIR /opt/CTFd/CTFd
+
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt \
-    && for d in CTFd/plugins/*; do \
+    && for d in plugins/*; do \
         if [ -f "$d/requirements.txt" ]; then \
             pip install --no-cache-dir -r "$d/requirements.txt";\
         fi; \
     done;
 
 
+# ---------------- RELEASE STAGE ----------------
+
 FROM python:3.11-slim-bookworm AS release
+
 WORKDIR /opt/CTFd
 
-# hadolint ignore=DL3008
+# Install runtime deps
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libffi8 \
@@ -36,8 +44,13 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --chown=1001:1001 CTFd/ /opt/CTFd
+# Copy full repo (IMPORTANT FIX)
+COPY --chown=1001:1001 . /opt/CTFd
 
+# Set correct working directory
+WORKDIR /opt/CTFd/CTFd
+
+# Create user + permissions
 RUN useradd \
     --no-log-init \
     --shell /bin/bash \
@@ -47,9 +60,15 @@ RUN useradd \
     && chown -R 1001:1001 /var/log/CTFd /var/uploads /opt/CTFd \
     && chmod +x /opt/CTFd/docker-entrypoint.sh
 
+# Copy virtual environment
 COPY --chown=1001:1001 --from=build /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+# 🔥 CRITICAL FIX
+ENV FLASK_APP=CTFd
+
 USER 1001
+
 EXPOSE 8000
+
 ENTRYPOINT ["/opt/CTFd/docker-entrypoint.sh"]
