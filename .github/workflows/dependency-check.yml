@@ -20,7 +20,7 @@ jobs:
       - name: Create Report Directory
         run: mkdir -p odc-reports
 
-      # 2. Run OWASP Dependency-Check via Docker
+      # 2. Run OWASP Dependency-Check via Docker (Now outputting HTML and JSON)
       - name: Run OWASP Dependency-Check
         run: |
           docker run --rm \
@@ -29,27 +29,39 @@ jobs:
             owasp/dependency-check:latest \
             --project "HPE-CPP3-TEAM-4-CTFd" \
             --scan /src \
-            --format HTML \
+            --format HTML --format JSON \
             --out /report \
             --enableExperimental
         continue-on-error: true
 
-      # 3. THE NEW STEP: Generate the GitHub Step Summary
+      # 3. Generate Dynamic Security Dashboard
       - name: Generate Security Dashboard Summary
-        if: always() # Ensures the summary prints even if the scan takes a long time or throws an error
-        run: |
-          echo "## 🛡️ OWASP Dependency-Check Results" >> $GITHUB_STEP_SUMMARY
-          echo "The software composition analysis scan has completed." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔍 Next Steps for the Team:" >> $GITHUB_STEP_SUMMARY
-          echo "1. Scroll to the bottom of this summary page to the **Artifacts** section." >> $GITHUB_STEP_SUMMARY
-          echo "2. Download the \`OWASP-Dependency-Check-Report\` zip file." >> $GITHUB_STEP_SUMMARY
-          echo "3. Extract and open the HTML file to view detailed CVE descriptions and mitigation steps." >> $GITHUB_STEP_SUMMARY
-
-      # 4. Upload the HTML report as a downloadable artifact
-      - name: Upload HTML Report
-        uses: actions/upload-artifact@v4
         if: always()
-        with:
-          name: OWASP-Dependency-Check-Report
-          path: odc-reports/dependency-check-report.html
+        continue-on-error: true
+        run: |
+          # Check if the JSON report was actually generated
+          if [ -f "odc-reports/dependency-check-report.json" ]; then
+            # Extract numbers using jq
+            TOTAL_DEPS=$(jq '.dependencies | length' odc-reports/dependency-check-report.json)
+            VULN_DEPS=$(jq '.dependencies | map(select(has("vulnerabilities"))) | length' odc-reports/dependency-check-report.json)
+            
+            # Print the dynamic dashboard
+            cat << EOF >> $GITHUB_STEP_SUMMARY
+            ## 🛡️ OWASP Dependency-Check Results
+            The scan completed successfully. Here is the high-level summary:
+            
+            * **📦 Total Dependencies Scanned:** $TOTAL_DEPS
+            * **🚨 Vulnerable Dependencies Found:** $VULN_DEPS
+            
+            ### 🔍 Next Steps for the Team:
+            1. Scroll to the bottom of this summary page to the **Artifacts** section.
+            2. Download the \`OWASP-Dependency-Check-Report\` zip file.
+            3. Extract and open the HTML file to view detailed CVE descriptions and mitigation steps.
+            EOF
+          else
+            # Print an error dashboard if the NVD download failed or crashed
+            cat << EOF >> $GITHUB_STEP_SUMMARY
+            ## 🛡️ OWASP Dependency-Check Results
+            ⚠️ **WARNING: The scan failed to generate a report.** Please check the terminal logs in the 'Run OWASP Dependency-Check' step above to see what went wrong.
+            EOF
+          fi
