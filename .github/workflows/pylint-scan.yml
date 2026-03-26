@@ -1,0 +1,25 @@
+name: Pylint Scan
+
+on:
+  push:
+    branches: ["devsecops-setup1"]
+  pull_request:
+    branches: ["devsecops-setup1"]
+  workflow_dispatch:
+
+jobs:
+  pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pylint
+      - name: Run Pylint
+        run: pylint CTFd/ --fail-under=7 --ignore=migrations
+        continue-on-error: true

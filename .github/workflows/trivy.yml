@@ -1,0 +1,27 @@
+name: Trivy Security Scan
+
+on:
+  push:
+    branches: ["devsecops-setup1"]
+  pull_request:
+    branches: ["devsecops-setup1"]
+  workflow_dispatch:
+
+jobs:
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build an image from Dockerfile
+        run: |
+          docker build -t ctfd:${{ github.sha }} .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'ctfd:${{ github.sha }}'
+          format: 'table'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'

@@ -6,6 +6,7 @@ on:
     branches: [ "main", "devsecops-setup1" , "test/dependency-check"] 
   pull_request:
     branches: [ "main", "devsecops-setup1" ]
+  workflow_dispatch:
 
 jobs:
   security-scan:
