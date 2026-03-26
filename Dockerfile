@@ -15,7 +15,7 @@ RUN apt-get update \
 
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY . /opt/CTFd
+COPY CTFd/ /opt/CTFd
 
 RUN pip install --no-cache-dir -r requirements.txt \
     && for d in CTFd/plugins/*; do \
@@ -36,7 +36,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --chown=1001:1001 . /opt/CTFd
+COPY --chown=1001:1001 CTFd/ /opt/CTFd
 
 RUN useradd \
     --no-log-init \
