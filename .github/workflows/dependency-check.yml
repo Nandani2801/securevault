@@ -3,7 +3,7 @@ name: OWASP Dependency Check Pipeline
 # This tells GitHub to run the scan every time code is pushed
 on:
   push:
-    branches: [ "main", "devsecops-setup1" , "test/dependency-check"] 
+    branches: [ "main", "devsecops-setup1", "test/dependency-check" ] 
   pull_request:
     branches: [ "main", "devsecops-setup1" ]
   workflow_dispatch:
@@ -34,7 +34,19 @@ jobs:
             --enableExperimental
         continue-on-error: true
 
-      # 3. Upload the HTML report as a downloadable artifact
+      # 3. THE NEW STEP: Generate the GitHub Step Summary
+      - name: Generate Security Dashboard Summary
+        if: always() # Ensures the summary prints even if the scan takes a long time or throws an error
+        run: |
+          echo "## 🛡️ OWASP Dependency-Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "The software composition analysis scan has completed." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔍 Next Steps for the Team:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Scroll to the bottom of this summary page to the **Artifacts** section." >> $GITHUB_STEP_SUMMARY
+          echo "2. Download the \`OWASP-Dependency-Check-Report\` zip file." >> $GITHUB_STEP_SUMMARY
+          echo "3. Extract and open the HTML file to view detailed CVE descriptions and mitigation steps." >> $GITHUB_STEP_SUMMARY
+
+      # 4. Upload the HTML report as a downloadable artifact
       - name: Upload HTML Report
         uses: actions/upload-artifact@v4
         if: always()
