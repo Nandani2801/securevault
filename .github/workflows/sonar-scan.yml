@@ -19,3 +19,16 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
+
+      # Uncomment the step below to fail the pipeline if the SonarCloud Quality Gate fails
+      # - name: Check SonarQube Quality Gate
+      #   uses: sonarsource/sonarqube-quality-gate-action@master
+      #   timeout-minutes: 5
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Generate Security Dashboard Summary
+        if: always()
+        run: |
+          echo "## 📊 SonarQube Scan Generated" >> $GITHUB_STEP_SUMMARY
+          echo "The SonarQube scan completed. Check the detailed analysis on [SonarCloud](https://sonarcloud.io)." >> $GITHUB_STEP_SUMMARY
