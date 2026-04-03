@@ -34,7 +34,6 @@ jobs:
           chmod 777 odc-data
 
       # 2. Run OWASP Dependency-Check via Docker as ROOT
-      # Added a new volume mount to link the cached folder to the container's data directory
       - name: Run OWASP Dependency-Check
         run: |
           docker run --rm -u root \
@@ -46,7 +45,8 @@ jobs:
             --scan /src \
             --format ALL \
             --out /report \
-            --enableExperimental
+            --enableExperimental \
+            --nvdApiKey ${{ secrets.NVD_API_KEY }}
         continue-on-error: true
 
       # 3. Generate Dynamic Security Dashboard
