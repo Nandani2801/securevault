@@ -21,5 +21,14 @@ jobs:
           pip install -r requirements.txt
           pip install bandit
       - name: Run Bandit
-        run: bandit -r CTFd/ -ll
+        run: bandit -r CTFd/ -ll | tee bandit-report.txt
         continue-on-error: true
+
+      - name: Generate Security Dashboard Summary
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "## 🛡️ Bandit Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat bandit-report.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
