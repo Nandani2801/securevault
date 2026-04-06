@@ -21,5 +21,14 @@ jobs:
           pip install -r requirements.txt
           pip install pylint
       - name: Run Pylint
-        run: pylint CTFd/ --fail-under=7 --ignore=migrations
+        run: pylint CTFd/ --fail-under=7 --ignore=migrations | tee pylint-report.txt
         continue-on-error: true
+
+      - name: Generate Security Dashboard Summary
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "## 📝 Pylint Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat pylint-report.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
