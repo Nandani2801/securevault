@@ -3,7 +3,7 @@ name: OWASP Dependency Check Pipeline
 # This tells GitHub to run the scan every time code is pushed
 on:
   push:
-    branches: [ "main", "devsecops-setup1", "test/dependency-check" ] 
+    branches: [ "main", "devsecops-setup1", "test/dependency-check" ]
   pull_request:
     branches: [ "main", "devsecops-setup1" ]
   workflow_dispatch:
@@ -16,11 +16,22 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 1. Create report directory and grant write permissions for Docker
-      - name: Create Report Directory
+      # NEW STEP: Set up GitHub Caching for the NVD Database
+      - name: Cache NVD Database
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/odc-data
+          key: ${{ runner.os }}-odc-nvd
+          restore-keys: |
+            ${{ runner.os }}-odc-
+
+      # 1. Create report and data directories, and grant write permissions for Docker
+      - name: Create Directories
         run: |
           mkdir -p odc-reports
+          mkdir -p odc-data
           chmod 777 odc-reports
+          chmod 777 odc-data
 
       # 2. Run OWASP Dependency-Check via Docker as ROOT
       - name: Run OWASP Dependency-Check
@@ -28,12 +39,14 @@ jobs:
           docker run --rm -u root \
             -v ${{ github.workspace }}:/src \
             -v ${{ github.workspace }}/odc-reports:/report \
+            -v ${{ github.workspace }}/odc-data:/usr/share/dependency-check/data \
             owasp/dependency-check:latest \
             --project "HPE-CPP3-TEAM-4-CTFd" \
             --scan /src \
             --format ALL \
             --out /report \
-            --enableExperimental
+            --enableExperimental \
+            --nvdApiKey ${{ secrets.NVD_API_KEY }}
         continue-on-error: true
 
       # 3. Generate Dynamic Security Dashboard
