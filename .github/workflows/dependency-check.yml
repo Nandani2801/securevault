@@ -41,18 +41,16 @@ jobs:
             -v ${{ github.workspace }}/odc-reports:/report \
             -v ${{ github.workspace }}/odc-data:/usr/share/dependency-check/data \
             owasp/dependency-check:latest \
-            --project "HPE-CPP3-TEAM-4-CTFd" \
+            --project "HPE-CPP3-TEAM-4-SecureVault" \
             --scan /src \
             --format ALL \
             --out /report \
             --enableExperimental \
             --nvdApiKey ${{ secrets.NVD_API_KEY }}
-        continue-on-error: true
 
       # 3. Generate Dynamic Security Dashboard
       - name: Generate Security Dashboard Summary
         if: always()
-        continue-on-error: true
         run: |
           # Check if the JSON report was actually generated
           if [ -f "odc-reports/dependency-check-report.json" ]; then
