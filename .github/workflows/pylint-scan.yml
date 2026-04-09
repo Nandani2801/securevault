@@ -21,7 +21,9 @@ jobs:
           pip install -r securevault/requirements.txt
           pip install pylint
       - name: Run Pylint
-        run: pylint securevault/app/ --fail-under=7 --ignore=migrations | tee pylint-report.txt
+        run: |
+          set -o pipefail
+          pylint securevault/app/ --fail-under=7 --ignore=migrations | tee pylint-report.txt
 
       - name: Generate Security Dashboard Summary
         if: always()

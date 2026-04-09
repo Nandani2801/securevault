@@ -22,6 +22,7 @@ jobs:
           pip install pytest pytest-cov
       - name: Run Unit Tests
         run: |
+          set -o pipefail
           cd securevault
           pytest app/ -v --tb=short | tee pytest-report.txt
 

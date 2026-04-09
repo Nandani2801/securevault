@@ -21,7 +21,9 @@ jobs:
           pip install -r securevault/requirements.txt
           pip install bandit
       - name: Run Bandit
-        run: bandit -r securevault/ -ll | tee bandit-report.txt
+        run: |
+          set -o pipefail
+          bandit -r securevault/ -ll | tee bandit-report.txt
 
       - name: Generate Security Dashboard Summary
         if: always()
