@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Site Fetcher — SecureVault{% endblock %}
+
+{% block content %}
+<div class="page-container page-narrow">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Site Fetcher</h1>
+            <p class="page-subtitle">Fetch site title and favicon for your credentials</p>
+        </div>
+    </div>
+
+    <div class="vuln-note mb-20">
+        <span class="vuln-tag">A10</span>
+        <small>
+            SSRF — no URL validation. Try these payloads:<br>
+            <code>http://169.254.169.254/latest/meta-data/</code> &nbsp;AWS instance metadata<br>
+            <code>http://localhost:5432</code> &nbsp;Internal PostgreSQL port<br>
+            <code>http://127.0.0.1</code> &nbsp;Loopback internal services
+        </small>
+    </div>
+
+    <div class="card">
+        <div class="form">
+            <div class="form-group">
+                <label class="form-label">Website URL</label>
+                <input type="text" id="fetch-url" class="form-input" placeholder="https://example.com">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" onclick="doFetch()">Fetch Site Info</button>
+            </div>
+        </div>
+
+        <div id="fetch-result" class="fetch-result hidden">
+            <h3 class="result-title">Response</h3>
+            <div id="result-content"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function doFetch() {
+    const url = document.getElementById('fetch-url').value.trim();
+    if (!url) return;
+
+    const resultDiv = document.getElementById('fetch-result');
+    const contentDiv = document.getElementById('result-content');
+
+    contentDiv.innerHTML = '<div class="loading">Fetching...</div>';
+    resultDiv.classList.remove('hidden');
+
+    const formData = new FormData();
+    formData.append('url', url);
+
+    try {
+        const response = await fetch('/fetcher/fetch-site', { method: 'POST', body: formData });
+        const data = await response.json();
+
+        if (data.error) {
+            contentDiv.innerHTML = `<div class="result-error"><strong>Error:</strong> ${data.error}</div>`;
+        } else {
+            contentDiv.innerHTML = `
+                <div class="result-row"><strong>Title:</strong> ${data.title || '(none)'}</div>
+                <div class="result-row"><strong>HTTP Status:</strong> ${data.status}</div>
+                ${data.preview ? `<div class="result-row"><strong>Response Preview:</strong><pre class="result-preview">${escapeHtml(data.preview)}</pre></div>` : ''}
+            `;
+        }
+    } catch (e) {
+        contentDiv.innerHTML = `<div class="result-error">Request failed: ${e.message}</div>`;
+    }
+}
+
+function escapeHtml(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+{% endblock %}
