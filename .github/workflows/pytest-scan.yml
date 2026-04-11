@@ -2,9 +2,9 @@ name: Pytest Unit Tests
 
 on:
   push:
-    branches: ["devsecops-setup1"]
+    branches: ['**']
   pull_request:
-    branches: ["devsecops-setup1"]
+    branches: ['**']
   workflow_dispatch:
 
 jobs:
@@ -18,13 +18,13 @@ jobs:
           python-version: "3.10"
       - name: Install dependencies
         run: |
-          pip install -r securevault/requirements.txt
+          pip install -r securevault/requirements.txt -r securevault/requirements-dev.txt
           pip install pytest pytest-cov
       - name: Run Unit Tests
         run: |
           set -o pipefail
           cd securevault
-          pytest app/ -v --tb=short | tee pytest-report.txt
+          pytest tests/ -v --tb=short | tee pytest-report.txt
 
       - name: Generate Security Dashboard Summary
         if: always()

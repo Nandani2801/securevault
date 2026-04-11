@@ -10,9 +10,13 @@ login_manager = LoginManager()
 migrate = Migrate()
 
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__)
-    app.config.from_object(Config)
+
+    if test_config:
+        app.config.update(test_config)   # ✅ use SQLite for tests
+    else:
+        app.config.from_object(Config)   # ✅ use Postgres for normal app
 
     db.init_app(app)
     login_manager.init_app(app)
