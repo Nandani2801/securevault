@@ -74,3 +74,17 @@ flask_profiler.sql
 
 # OWASP Dependency-Check local scans
 #odc-reports/
+
+venv/
+__pycache__/
+*.pyc
+*.pyo
+migrations/
+.env
+*.db
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+.scannerwork/
+reports/
+htmlcov/
+.coverage
