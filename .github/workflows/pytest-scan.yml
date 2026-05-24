@@ -25,6 +25,8 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run Unit Tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           set -o pipefail
           pytest tests_fixed/ -c pytest_fixed.ini -v --tb=short | tee pytest-report.txt
